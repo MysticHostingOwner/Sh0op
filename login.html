@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShadowShop — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --grass: #5D9E3F;
+  --grass-dark: #3A6B28;
+  --stone: #8A8A8A;
+  --stone-dark: #5A5A5A;
+  --emerald: #17DD62;
+  --emerald-dark: #0DA048;
+  --emerald-glow: rgba(23,221,98,0.3);
+  --gold: #FFCC00;
+  --redstone: #CC2222;
+  --bg: #1a1a1a;
+  --panel: #2D2D2D;
+  --text-dim: #AAAAAA;
+}
+
+body {
+  font-family: 'VT323', monospace;
+  background: var(--bg);
+  color: white;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  image-rendering: pixelated;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(93,158,63,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(93,158,63,0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+
+.login-box {
+  background: var(--panel);
+  border: 4px solid var(--stone);
+  outline: 4px solid #000;
+  padding: 32px 36px;
+  width: 420px;
+  max-width: 95vw;
+  position: relative;
+  box-shadow: 8px 8px 0 #000, inset 0 0 0 2px rgba(255,255,255,0.05);
+  animation: loginAppear 0.4s steps(4) forwards;
+  z-index: 1;
+}
+
+@keyframes loginAppear {
+  from { transform: scale(0.8); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.login-box::before {
+  content: '';
+  position: absolute;
+  top: -2px; left: -2px; right: -2px;
+  height: 6px;
+  background: repeating-linear-gradient(90deg, var(--grass) 0px, var(--grass) 16px, var(--grass-dark) 16px, var(--grass-dark) 32px);
+}
+
+.login-icon {
+  text-align: center;
+  font-size: 64px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 12px rgba(23,221,98,0.5));
+}
+
+.login-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  text-align: center;
+  color: var(--gold);
+  text-shadow: 2px 2px 0 #000, 0 0 20px rgba(255,204,0,0.4);
+  margin-bottom: 6px;
+  line-height: 1.6;
+}
+
+.login-subtitle {
+  font-size: 20px;
+  text-align: center;
+  color: var(--text-dim);
+  margin-bottom: 28px;
+}
+
+.mc-label {
+  font-size: 18px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.mc-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: #1a1a1a;
+  border: 3px solid var(--stone-dark);
+  outline: 2px solid #000;
+  color: white;
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  letter-spacing: 0.1em;
+  margin-bottom: 18px;
+  transition: border-color 0.15s;
+}
+
+.mc-input:focus {
+  outline: 2px solid #000;
+  border-color: var(--emerald);
+  box-shadow: 0 0 0 1px var(--emerald-dark), 0 0 12px var(--emerald-glow);
+}
+
+.mc-input::placeholder { color: #555; }
+
+.mc-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(180deg, #6aad3f 0%, var(--grass-dark) 100%);
+  border: 3px solid #000;
+  outline: 2px solid rgba(255,255,255,0.2);
+  color: white;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  text-shadow: 1px 1px 0 #000;
+  transition: all 0.1s steps(1);
+  box-shadow: 0 4px 0 var(--grass-dark), 4px 0 0 rgba(0,0,0,0.3);
+  letter-spacing: 0.05em;
+}
+
+.mc-btn:hover {
+  background: linear-gradient(180deg, #7ec44e 0%, #4d8f35 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--grass-dark), 4px 0 0 rgba(0,0,0,0.3);
+}
+
+.mc-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--grass-dark);
+}
+
+.login-error {
+  color: var(--redstone);
+  font-size: 18px;
+  text-align: center;
+  margin-top: 12px;
+  min-height: 24px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25%      { transform: translateX(-6px); }
+  75%      { transform: translateX(6px); }
+}
+
+.shake { animation: shake 0.3s steps(3); }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #111; }
+::-webkit-scrollbar-thumb { background: var(--stone-dark); border: 2px solid #000; }
+</style>
+</head>
+<body>
+
+<div class="login-box">
+  <div class="login-icon">🏪</div>
+  <div class="login-title">SHADOWSHOP<br>TRADING CO.</div>
+  <div class="login-subtitle">[ Staff Login Required ]</div>
+
+  <label class="mc-label">▶ Cashier ID:</label>
+  <input class="mc-input" type="password" id="loginInput" placeholder="Enter your ID..." maxlength="20"
+    onkeydown="if(event.key==='Enter') doLogin()">
+
+  <button class="mc-btn" onclick="doLogin()">[ LOG IN ]</button>
+  <div class="login-error" id="loginError"></div>
+</div>
+
+<script>
+const CASHIERS = { '163926': 'Shadow' };
+
+function doLogin() {
+  const val = document.getElementById('loginInput').value.trim();
+  const errEl = document.getElementById('loginError');
+  if (CASHIERS[val]) {
+    sessionStorage.setItem('ss_cashier', CASHIERS[val]);
+    sessionStorage.setItem('ss_loggedIn', '1');
+    // Clear any old cart
+    sessionStorage.removeItem('ss_cart');
+    sessionStorage.removeItem('ss_discount');
+    sessionStorage.removeItem('ss_player');
+    window.location.href = 'pos.html';
+  } else {
+    errEl.textContent = '✗ INVALID ID. ACCESS DENIED.';
+    errEl.classList.remove('shake');
+    void errEl.offsetWidth;
+    errEl.classList.add('shake');
+    document.getElementById('loginInput').value = '';
+  }
+}
+
+// If already logged in, skip login
+if (sessionStorage.getItem('ss_loggedIn') === '1') {
+  window.location.href = 'pos.html';
+}
+</script>
+</body>
+</html>

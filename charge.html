@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShadowShop — Charge</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --dirt: #8B6914;
+  --dirt-dark: #5C4A1E;
+  --grass: #5D9E3F;
+  --grass-dark: #3A6B28;
+  --stone: #8A8A8A;
+  --stone-dark: #5A5A5A;
+  --emerald: #17DD62;
+  --emerald-dark: #0DA048;
+  --emerald-glow: rgba(23,221,98,0.3);
+  --diamond: #4FD0D0;
+  --gold: #FFCC00;
+  --redstone: #CC2222;
+  --bg: #1a1a1a;
+  --panel: #2D2D2D;
+  --panel2: #3A3A3A;
+  --text: #FFFFFF;
+  --text-dim: #AAAAAA;
+}
+
+body {
+  font-family: 'VT323', monospace;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  image-rendering: pixelated;
+  display: flex;
+  flex-direction: column;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.5) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* TOPBAR */
+.topbar {
+  background: linear-gradient(180deg, #4a7a2e 0%, var(--grass-dark) 60%, var(--dirt) 100%);
+  border-bottom: 4px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 0 #000;
+  position: relative;
+  z-index: 10;
+}
+
+.topbar::after {
+  content: '';
+  position: absolute;
+  bottom: -8px; left: 0; right: 0;
+  height: 4px;
+  background: var(--dirt-dark);
+}
+
+.topbar-brand {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 13px;
+  color: var(--gold);
+  text-shadow: 2px 2px 0 #000;
+}
+
+.topbar-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.topbar-info span {
+  font-size: 18px;
+  color: rgba(255,255,255,0.8);
+}
+
+.cashier-badge {
+  background: var(--emerald-dark);
+  border: 2px solid #000;
+  color: white;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  padding: 5px 10px;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: 2px 2px 0 #000;
+}
+
+/* CHECKOUT LAYOUT */
+#checkoutView {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+/* LEFT — order summary */
+.summary-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 20px 24px;
+  gap: 14px;
+}
+
+.panel-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  color: var(--gold);
+  text-shadow: 1px 1px 0 #000;
+}
+
+.player-line {
+  font-size: 18px;
+  color: var(--text-dim);
+}
+
+.player-name-display {
+  color: var(--emerald);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+}
+
+#coItems {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 4px;
+}
+
+#coItems::-webkit-scrollbar { width: 6px; }
+#coItems::-webkit-scrollbar-track { background: #111; }
+#coItems::-webkit-scrollbar-thumb { background: var(--stone-dark); border: 1px solid #000; }
+
+.co-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--panel2);
+  border: 2px solid var(--stone-dark);
+  outline: 1px solid #000;
+  animation: slideIn 0.15s steps(3) forwards;
+}
+
+@keyframes slideIn {
+  from { opacity:0; transform: translateX(-8px); }
+  to   { opacity:1; transform: translateX(0); }
+}
+
+.co-item-emoji { font-size: 22px; flex-shrink: 0; }
+
+.co-item-name {
+  flex: 1;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  line-height: 1.6;
+  color: white;
+}
+
+.co-item-price {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: var(--emerald);
+  white-space: nowrap;
+}
+
+/* RIGHT — payment panel */
+.payment-panel {
+  background: var(--panel);
+  border-left: 4px solid #000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: inset 2px 0 0 rgba(255,255,255,0.03);
+}
+
+.payment-header {
+  padding: 14px 18px;
+  background: var(--stone-dark);
+  border-bottom: 3px solid #000;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  color: var(--gold);
+  text-shadow: 1px 1px 0 #000;
+  flex-shrink: 0;
+}
+
+.totals-block {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: 2px solid #000;
+  background: rgba(0,0,0,0.2);
+  flex-shrink: 0;
+}
+
+.totals-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 17px;
+  color: var(--text-dim);
+}
+
+.totals-row.discount { color: var(--emerald); }
+
+.totals-divider {
+  border: none;
+  border-top: 2px solid var(--stone-dark);
+  margin: 2px 0;
+}
+
+.totals-row.grand-total {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  color: var(--gold);
+  text-shadow: 1px 1px 0 #000;
+}
+
+.payment-input-block {
+  padding: 14px 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.emerald-label {
+  font-size: 17px;
+  color: var(--emerald);
+}
+
+.emerald-input {
+  width: 100%;
+  padding: 10px;
+  background: #111;
+  border: 2px solid var(--emerald-dark);
+  outline: 1px solid #000;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  color: var(--emerald);
+}
+
+.emerald-input:focus { outline: 1px solid #000; box-shadow: 0 0 8px var(--emerald-glow); }
+
+.change-display {
+  font-size: 20px;
+  color: var(--diamond);
+}
+
+.buttons-block {
+  padding: 12px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-charge {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(180deg, #1fee6a 0%, var(--emerald-dark) 100%);
+  border: 3px solid #000;
+  color: #003a15;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+  box-shadow: 0 5px 0 #056030, 4px 0 0 rgba(0,0,0,0.3);
+  transition: all 0.1s steps(1);
+  letter-spacing: 0.03em;
+}
+
+.btn-charge:hover {
+  background: linear-gradient(180deg, #34ff7c 0%, #0fbe52 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #056030, 4px 0 0 rgba(0,0,0,0.3);
+}
+
+.btn-charge:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 #056030;
+}
+
+.btn-void {
+  width: 100%;
+  padding: 8px;
+  background: none;
+  color: var(--redstone);
+  border: 2px solid #5a1010;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  cursor: pointer;
+  transition: all 0.1s steps(1);
+  letter-spacing: 0.03em;
+}
+
+.btn-void:hover { background: rgba(204,34,34,0.15); border-color: var(--redstone); }
+
+.btn-back {
+  width: 100%;
+  padding: 8px;
+  background: none;
+  color: var(--stone);
+  border: 2px solid var(--stone-dark);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  cursor: pointer;
+  transition: all 0.1s steps(1);
+  letter-spacing: 0.03em;
+}
+
+.btn-back:hover { color: white; border-color: var(--stone); }
+
+/* SUCCESS VIEW */
+#successView {
+  display: none;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  background: rgba(0,0,0,0.7);
+}
+
+.success-card {
+  background: var(--panel);
+  border: 4px solid var(--emerald);
+  outline: 3px solid #000;
+  padding: 36px 40px;
+  text-align: center;
+  box-shadow: 8px 8px 0 #000, 0 0 40px var(--emerald-glow);
+  max-width: 380px;
+  width: 92%;
+  animation: popIn 0.3s steps(4) forwards;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.success-icon {
+  font-size: 60px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.success-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 13px;
+  color: var(--gold);
+  text-shadow: 2px 2px 0 #000;
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.success-amount {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 22px;
+  color: var(--emerald);
+  text-shadow: 2px 2px 0 #000;
+  margin-bottom: 6px;
+}
+
+.success-meta {
+  font-size: 20px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.success-change {
+  background: rgba(23,221,98,0.1);
+  border: 2px solid var(--emerald-dark);
+  color: var(--emerald);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  padding: 10px;
+  margin: 12px 0;
+  text-shadow: 1px 1px 0 #000;
+  line-height: 1.8;
+}
+
+.btn-new-sale {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(180deg, #1fee6a, var(--emerald-dark));
+  border: 3px solid #000;
+  color: #003a15;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #056030;
+  transition: all 0.1s steps(1);
+  margin-top: 8px;
+}
+
+.btn-new-sale:hover { background: linear-gradient(180deg, #34ff7c, #0fbe52); }
+.btn-new-sale:active { transform: translateY(4px); box-shadow: none; }
+
+.transaction-id {
+  font-size: 14px;
+  color: #555;
+  margin-top: 10px;
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #111; }
+::-webkit-scrollbar-thumb { background: var(--stone-dark); border: 2px solid #000; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">⛏ SHADOWSHOP — CHECKOUT</div>
+  <div class="topbar-info">
+    <span id="txnDisplay" style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--gold);"></span>
+    <span id="clock">--:--</span>
+    <div class="cashier-badge" id="cashierBadge">🧑 SHADOW</div>
+  </div>
+</div>
+
+<!-- CHECKOUT VIEW -->
+<div id="checkoutView">
+
+  <!-- LEFT: Order Summary -->
+  <div class="summary-panel">
+    <div class="panel-title">📋 ORDER SUMMARY</div>
+    <div class="player-line">
+      Player: <span class="player-name-display" id="coPlayer">—</span>
+    </div>
+    <div id="coItems"></div>
+  </div>
+
+  <!-- RIGHT: Payment -->
+  <div class="payment-panel">
+    <div class="payment-header">💰 PAYMENT</div>
+
+    <div class="totals-block">
+      <div class="totals-row"><span>Subtotal</span><span id="coSubtotal">◈ 0</span></div>
+      <div class="totals-row discount" id="coDiscRow" style="display:none;">
+        <span id="coDiscLabel">Discount</span><span id="coDisc">-◈ 0</span>
+      </div>
+      <div class="totals-row"><span>Service Fee</span><span id="coFees">◈ 0</span></div>
+      <hr class="totals-divider">
+      <div class="totals-row grand-total"><span>TOTAL DUE</span><span id="coTotal">◈ 0</span></div>
+    </div>
+
+    <div class="payment-input-block">
+      <div class="emerald-label">◈ Emeralds Received:</div>
+      <input class="emerald-input" type="number" id="coGiven" placeholder="0" oninput="calcChange()">
+      <div class="change-display" id="coChange">Change: ◈ 0</div>
+    </div>
+
+    <div class="buttons-block">
+      <button class="btn-charge" id="confirmBtn" onclick="confirmPayment()">[ CONFIRM CHARGE ◈ 0 ]</button>
+      <button class="btn-void" onclick="voidTransaction()">▶ VOID TRANSACTION</button>
+      <button class="btn-back" onclick="window.location.href='pos.html'">◀ BACK TO CART</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- SUCCESS VIEW -->
+<div id="successView">
+  <div class="success-card">
+    <span class="success-icon">✅</span>
+    <div class="success-title">TRADE<br>COMPLETE!</div>
+    <div class="success-amount" id="sucAmount">◈ 0</div>
+    <div class="success-meta" id="sucPlayer">Player: —</div>
+    <div class="success-meta">Paid with Emeralds</div>
+    <div class="success-change" id="sucChange" style="display:none;">CHANGE DUE: ◈ 0</div>
+    <button class="btn-new-sale" onclick="newSale()">[ NEW SALE ]</button>
+    <div class="transaction-id" id="sucTxn"></div>
+  </div>
+</div>
+
+<script>
+// Guard
+if (sessionStorage.getItem('ss_loggedIn') !== '1') {
+  window.location.href = 'login.html';
+}
+
+// ===== LOAD STATE FROM SESSION =====
+let cart = [];
+let appliedDiscount = null;
+let playerName = '';
+let total = 0;
+let txnId = '';
+
+try {
+  cart = JSON.parse(sessionStorage.getItem('ss_cart') || '[]');
+  appliedDiscount = JSON.parse(sessionStorage.getItem('ss_discount') || 'null');
+  playerName = sessionStorage.getItem('ss_player') || '';
+  total = parseInt(sessionStorage.getItem('ss_total') || '0');
+} catch(e) {}
+
+// If no cart, go back to pos
+if (cart.length === 0) {
+  window.location.href = 'pos.html';
+}
+
+// ===== CASHIER =====
+const cashierName = sessionStorage.getItem('ss_cashier') || 'Shadow';
+document.getElementById('cashierBadge').textContent = '🧑 ' + cashierName.toUpperCase();
+
+// ===== CLOCK =====
+function startClock() {
+  function tick() {
+    const now = new Date();
+    document.getElementById('clock').textContent =
+      now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+startClock();
+
+// ===== HELPERS =====
+function getSubtotal() {
+  return cart.reduce((s,i) => s + i.price * i.qty, 0);
+}
+
+function getDiscountAmt(subtotal) {
+  if (!appliedDiscount) return 0;
+  if (appliedDiscount.type === 'pct') return Math.round(subtotal * appliedDiscount.value / 100);
+  return Math.min(appliedDiscount.value, subtotal);
+}
+
+function isOwnerCode() {
+  return appliedDiscount && appliedDiscount.code === '163926';
+}
+
+function getTotal() {
+  const subtotal = getSubtotal();
+  const discAmt = getDiscountAmt(subtotal);
+  const fees = (cart.length > 0 && !isOwnerCode()) ? 1 : 0;
+  return subtotal - discAmt + fees;
+}
+
+// ===== BUILD PAGE =====
+function buildPage() {
+  txnId = 'TXN-' + Date.now().toString().slice(-8);
+  document.getElementById('txnDisplay').textContent = txnId;
+  document.getElementById('coPlayer').textContent = playerName;
+
+  // Items list
+  document.getElementById('coItems').innerHTML = cart.map((item, i) =>
+    '<div class="co-item" style="animation-delay:' + (i * 0.04) + 's">' +
+      '<span class="co-item-emoji">' + item.emoji + '</span>' +
+      '<span class="co-item-name">' + item.name + ' ×' + item.qty + '</span>' +
+      '<span class="co-item-price">◈ ' + (item.price * item.qty) + '</span>' +
+    '</div>'
+  ).join('');
+
+  const subtotal = getSubtotal();
+  const discAmt = getDiscountAmt(subtotal);
+  const fees = (cart.length > 0 && !isOwnerCode()) ? 1 : 0;
+  const grandTotal = subtotal - discAmt + fees;
+
+  document.getElementById('coSubtotal').textContent = '◈ ' + subtotal;
+
+  if (appliedDiscount && discAmt > 0) {
+    document.getElementById('coDiscRow').style.display = 'flex';
+    const lbl = appliedDiscount.type === 'pct'
+      ? 'Discount (' + appliedDiscount.value + '%)'
+      : 'Discount (' + appliedDiscount.code + ')';
+    document.getElementById('coDiscLabel').textContent = lbl;
+    document.getElementById('coDisc').textContent = '-◈ ' + discAmt;
+  } else {
+    document.getElementById('coDiscRow').style.display = 'none';
+  }
+
+  const feesEl = document.getElementById('coFees');
+  feesEl.textContent = '◈ ' + fees;
+  if (isOwnerCode()) {
+    feesEl.style.textDecoration = 'line-through';
+    feesEl.style.color = 'var(--emerald)';
+  }
+
+  document.getElementById('coTotal').textContent = '◈ ' + grandTotal;
+
+  const btn = document.getElementById('confirmBtn');
+  btn.textContent = isOwnerCode() && grandTotal === 0
+    ? '[ CONFIRM FREE ✓ ]'
+    : '[ CONFIRM CHARGE ◈ ' + grandTotal + ' ]';
+}
+
+function calcChange() {
+  const given = parseInt(document.getElementById('coGiven').value) || 0;
+  const change = Math.max(0, given - getTotal());
+  document.getElementById('coChange').textContent = 'Change: ◈ ' + change;
+}
+
+function confirmPayment() {
+  const grandTotal = getTotal();
+  const given = parseInt(document.getElementById('coGiven').value) || 0;
+  const change = Math.max(0, given - grandTotal);
+
+  document.getElementById('sucAmount').textContent = '◈ ' + grandTotal;
+  document.getElementById('sucPlayer').textContent = 'Player: ' + playerName;
+
+  const changeEl = document.getElementById('sucChange');
+  if (change > 0) {
+    changeEl.textContent = 'CHANGE DUE: ◈ ' + change;
+    changeEl.style.display = 'block';
+  } else {
+    changeEl.style.display = 'none';
+  }
+
+  document.getElementById('sucTxn').textContent = txnId;
+
+  // Show success
+  document.getElementById('checkoutView').style.display = 'none';
+  document.getElementById('successView').style.display = 'flex';
+}
+
+function voidTransaction() {
+  if (confirm('Void this transaction?')) {
+    sessionStorage.removeItem('ss_cart');
+    sessionStorage.removeItem('ss_discount');
+    sessionStorage.removeItem('ss_player');
+    sessionStorage.removeItem('ss_total');
+    window.location.href = 'pos.html';
+  }
+}
+
+function newSale() {
+  sessionStorage.removeItem('ss_cart');
+  sessionStorage.removeItem('ss_discount');
+  sessionStorage.removeItem('ss_player');
+  sessionStorage.removeItem('ss_total');
+  window.location.href = 'pos.html';
+}
+
+// ===== INIT =====
+buildPage();
+</script>
+</body>
+</html>
