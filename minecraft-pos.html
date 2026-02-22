@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShadowShop POS</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --dirt: #8B6914;
+  --dirt-dark: #5C4A1E;
+  --grass: #5D9E3F;
+  --grass-dark: #3A6B28;
+  --stone: #8A8A8A;
+  --stone-dark: #5A5A5A;
+  --wood: #9C7A3C;
+  --wood-dark: #6B5228;
+  --emerald: #17DD62;
+  --emerald-dark: #0DA048;
+  --emerald-glow: rgba(23,221,98,0.3);
+  --diamond: #4FD0D0;
+  --gold: #FFCC00;
+  --redstone: #CC2222;
+  --bg: #1a1a1a;
+  --panel: #2D2D2D;
+  --panel2: #3A3A3A;
+  --border: #555;
+  --text: #FFFFFF;
+  --text-dim: #AAAAAA;
+  --pixel: 2px;
+}
+
+body {
+  font-family: 'VT323', monospace;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  image-rendering: pixelated;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Crect x='0' y='0' width='4' height='4' fill='%23fff'/%3E%3Crect x='0' y='4' width='16' height='4' fill='%23fff'/%3E%3Crect x='0' y='8' width='4' height='8' fill='%23fff'/%3E%3C/svg%3E") 0 0, crosshair;
+}
+
+/* === PIXELATED BACKGROUND === */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.5) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ===================== LOGIN PAGE ===================== */
+#loginPage {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1a;
+}
+
+#loginPage::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(93,158,63,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(93,158,63,0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+
+.login-box {
+  background: var(--panel);
+  border: 4px solid var(--stone);
+  outline: 4px solid #000;
+  padding: 32px 36px;
+  width: 420px;
+  max-width: 95vw;
+  position: relative;
+  box-shadow: 8px 8px 0 #000, inset 0 0 0 2px rgba(255,255,255,0.05);
+  animation: loginAppear 0.4s steps(4) forwards;
+}
+
+@keyframes loginAppear {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.login-box::before {
+  content: '';
+  position: absolute;
+  top: -2px; left: -2px; right: -2px;
+  height: 6px;
+  background: repeating-linear-gradient(90deg, var(--grass) 0px, var(--grass) 16px, var(--grass-dark) 16px, var(--grass-dark) 32px);
+}
+
+.login-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  text-align: center;
+  color: var(--gold);
+  text-shadow: 2px 2px 0 #000, 0 0 20px rgba(255,204,0,0.4);
+  margin-bottom: 6px;
+  line-height: 1.6;
+}
+
+.login-subtitle {
+  font-size: 20px;
+  text-align: center;
+  color: var(--text-dim);
+  margin-bottom: 28px;
+}
+
+.login-icon {
+  text-align: center;
+  font-size: 64px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 12px rgba(23,221,98,0.5));
+}
+
+.mc-label {
+  font-size: 18px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.mc-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: #1a1a1a;
+  border: 3px solid var(--stone-dark);
+  outline: 2px solid #000;
+  color: white;
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  letter-spacing: 0.1em;
+  margin-bottom: 18px;
+  transition: border-color 0.15s;
+}
+
+.mc-input:focus {
+  outline: 2px solid #000;
+  border-color: var(--emerald);
+  box-shadow: 0 0 0 1px var(--emerald-dark), 0 0 12px var(--emerald-glow);
+}
+
+.mc-input::placeholder { color: #555; }
+
+.mc-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(180deg, #6aad3f 0%, var(--grass-dark) 100%);
+  border: 3px solid #000;
+  outline: 2px solid rgba(255,255,255,0.2);
+  color: white;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  text-shadow: 1px 1px 0 #000;
+  transition: all 0.1s steps(1);
+  box-shadow: 0 4px 0 var(--grass-dark), 4px 0 0 rgba(0,0,0,0.3);
+  letter-spacing: 0.05em;
+}
+
+.mc-btn:hover {
+  background: linear-gradient(180deg, #7ec44e 0%, #4d8f35 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--grass-dark), 4px 0 0 rgba(0,0,0,0.3);
+}
+
+.mc-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--grass-dark);
+}
+
+.login-error {
+  color: var(--redstone);
+  font-size: 18px;
+  text-align: center;
+  margin-top: 12px;
+  min-height: 24px;
+  text-shadow: 1px 1px 0 #000;
+  animation: shake 0.3s steps(3);
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+/* ===================== POS LAYOUT ===================== */
+#posPage {
+  display: none;
+  height: 100vh;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+#posPage.active { display: flex; }
+
+/* TOPBAR */
+.topbar {
+  background: linear-gradient(180deg, #4a7a2e 0%, var(--grass-dark) 60%, var(--dirt) 100%);
+  border-bottom: 4px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 0 #000;
+  position: relative;
+}
+
+.topbar::after {
+  content: '';
+  position: absolute;
+  bottom: -8px; left: 0; right: 0;
+  height: 4px;
+  background: var(--dirt-dark);
+}
+
+.topbar-brand {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 13px;
+  color: var(--gold);
+  text-shadow: 2px 2px 0 #000;
+}
+
+.topbar-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.topbar-info span {
+  font-size: 18px;
+  color: rgba(255,255,255,0.8);
+}
+
+.cashier-badge {
+  background: var(--emerald-dark);
+  border: 2px solid #000;
+  color: white;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  padding: 5px 10px;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: 2px 2px 0 #000;
+}
+
+/* MAIN */
+.main {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* PRODUCTS PANEL */
+.products-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 16px 20px;
+  gap: 12px;
+}
+
+.search-bar {
+  position: relative;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 10px 14px 10px 40px;
+  background: #111;
+  border: 3px solid var(--stone-dark);
+  outline: 2px solid #000;
+  color: white;
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  transition: border-color 0.15s;
+}
+
+.search-bar input:focus {
+  border-color: var(--emerald);
+  box-shadow: 0 0 8px var(--emerald-glow);
+  outline: 2px solid #000;
+}
+
+.search-bar input::placeholder { color: #555; }
+
+.search-bar svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+}
+
+.category-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 6px 14px;
+  font-family: 'VT323', monospace;
+  font-size: 17px;
+  cursor: pointer;
+  background: var(--stone-dark);
+  border: 2px solid #000;
+  color: var(--text-dim);
+  transition: all 0.1s steps(1);
+  user-select: none;
+  outline: 1px solid rgba(255,255,255,0.1);
+}
+
+.tab:hover { background: var(--stone); color: white; }
+.tab.active {
+  background: linear-gradient(180deg, #6aad3f, var(--grass-dark));
+  color: white;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: 0 3px 0 #000;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  overflow-y: auto;
+  padding-right: 4px;
+  padding-bottom: 4px;
+}
+
+.product-grid::-webkit-scrollbar { width: 8px; }
+.product-grid::-webkit-scrollbar-track { background: #111; }
+.product-grid::-webkit-scrollbar-thumb { background: var(--stone-dark); border: 2px solid #000; }
+
+.product-card {
+  background: var(--panel2);
+  border: 3px solid var(--stone-dark);
+  outline: 2px solid #000;
+  padding: 12px 10px;
+  cursor: pointer;
+  transition: all 0.1s steps(1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  box-shadow: 3px 3px 0 #000;
+}
+
+.product-card:hover {
+  border-color: var(--emerald);
+  background: #444;
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 #000;
+}
+
+.product-card:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #000;
+}
+
+.product-emoji {
+  font-size: 32px;
+  line-height: 1;
+  text-align: center;
+  filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.8));
+}
+
+.product-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  line-height: 1.5;
+  color: white;
+  text-shadow: 1px 1px 0 #000;
+  word-break: break-word;
+}
+
+.product-sku {
+  font-size: 14px;
+  color: #888;
+}
+
+.product-price {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: var(--emerald);
+  text-shadow: 1px 1px 0 #000;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* CART PANEL */
+.cart-panel {
+  background: var(--panel);
+  border-left: 4px solid #000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: inset 2px 0 0 rgba(255,255,255,0.03);
+}
+
+.cart-header {
+  padding: 14px 18px 12px;
+  border-bottom: 3px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  background: var(--stone-dark);
+}
+
+.cart-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  color: var(--gold);
+  text-shadow: 1px 1px 0 #000;
+}
+
+.cart-count {
+  background: var(--redstone);
+  border: 2px solid #000;
+  color: white;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 2px 2px 0 #000;
+}
+
+.customer-row {
+  padding: 10px 16px;
+  border-bottom: 2px solid #000;
+  flex-shrink: 0;
+  background: rgba(0,0,0,0.2);
+}
+
+.cart-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cart-items::-webkit-scrollbar { width: 6px; }
+.cart-items::-webkit-scrollbar-track { background: #1a1a1a; }
+.cart-items::-webkit-scrollbar-thumb { background: var(--stone-dark); border: 1px solid #000; }
+
+.cart-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #555;
+}
+
+.cart-empty-icon { font-size: 40px; opacity: 0.5; }
+.cart-empty p { font-family: 'Press Start 2P', monospace; font-size: 9px; text-align: center; line-height: 1.8; }
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #222;
+  border: 2px solid var(--stone-dark);
+  outline: 1px solid #000;
+  animation: slideIn 0.15s steps(3) forwards;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.cart-item-emoji { font-size: 20px; flex-shrink: 0; }
+
+.cart-item-info { flex: 1; min-width: 0; }
+
+.cart-item-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  line-height: 1.6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cart-item-price { font-size: 14px; color: #888; }
+
+.cart-item-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.qty-btn {
+  width: 22px;
+  height: 22px;
+  background: var(--stone-dark);
+  border: 2px solid #000;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: white;
+  font-family: 'VT323', monospace;
+  line-height: 1;
+  transition: all 0.1s steps(1);
+}
+
+.qty-btn:hover { background: var(--emerald-dark); }
+.qty-btn:active { transform: scale(0.9); }
+
+.qty-display {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.cart-item-total {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: var(--emerald);
+  min-width: 44px;
+  text-align: right;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  font-size: 16px;
+  padding: 2px;
+  font-family: 'VT323', monospace;
+  transition: color 0.1s steps(1);
+  line-height: 1;
+}
+
+.remove-btn:hover { color: var(--redstone); }
+
+/* TOTALS */
+.cart-totals {
+  padding: 12px 16px;
+  border-top: 3px solid #000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+  background: rgba(0,0,0,0.3);
+}
+
+.totals-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 17px;
+  color: var(--text-dim);
+}
+
+.totals-row.discount { color: var(--emerald); }
+
+.totals-divider {
+  border: none;
+  border-top: 2px solid var(--stone-dark);
+  margin: 2px 0;
+}
+
+.totals-row.total {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  color: var(--gold);
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* DISCOUNT */
+.discount-row {
+  display: flex;
+  gap: 6px;
+  padding: 8px 16px 0;
+  flex-shrink: 0;
+}
+
+.discount-input {
+  flex: 1;
+  padding: 7px 10px;
+  background: #111;
+  border: 2px solid var(--stone-dark);
+  outline: 1px solid #000;
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  color: white;
+}
+
+.discount-input:focus {
+  border-color: var(--emerald);
+  outline: 1px solid #000;
+}
+
+.discount-input::placeholder { color: #555; }
+
+.btn-discount {
+  padding: 7px 12px;
+  background: linear-gradient(180deg, #8c6d2f, var(--wood-dark));
+  border: 2px solid #000;
+  color: var(--gold);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  cursor: pointer;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: 2px 2px 0 #000;
+  transition: all 0.1s steps(1);
+}
+
+.btn-discount:hover { background: linear-gradient(180deg, #a07d36, #8c6d2f); }
+.btn-discount:active { transform: translate(2px,2px); box-shadow: 0 0 0 #000; }
+
+/* PAY SECTION */
+.pay-section {
+  padding: 10px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.emerald-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.emerald-label {
+  font-size: 16px;
+  color: var(--emerald);
+  white-space: nowrap;
+}
+
+.emerald-input {
+  flex: 1;
+  padding: 7px 10px;
+  background: #111;
+  border: 2px solid var(--emerald-dark);
+  outline: 1px solid #000;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: var(--emerald);
+}
+
+.emerald-input:focus { outline: 1px solid #000; box-shadow: 0 0 8px var(--emerald-glow); }
+
+.change-display {
+  font-size: 16px;
+  color: var(--diamond);
+  white-space: nowrap;
+}
+
+.btn-charge {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(180deg, #1fee6a 0%, var(--emerald-dark) 100%);
+  border: 3px solid #000;
+  color: #003a15;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+  box-shadow: 0 5px 0 #056030, 4px 0 0 rgba(0,0,0,0.3);
+  transition: all 0.1s steps(1);
+  letter-spacing: 0.03em;
+}
+
+.btn-charge:hover {
+  background: linear-gradient(180deg, #34ff7c 0%, #0fbe52 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #056030, 4px 0 0 rgba(0,0,0,0.3);
+}
+
+.btn-charge:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 #056030, 0 0 0 rgba(0,0,0,0.3);
+}
+
+.btn-charge:disabled {
+  background: var(--stone-dark);
+  color: #666;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 3px 0 #333;
+  text-shadow: none;
+}
+
+.btn-void {
+  width: 100%;
+  padding: 8px;
+  background: none;
+  color: var(--redstone);
+  border: 2px solid #5a1010;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  cursor: pointer;
+  transition: all 0.1s steps(1);
+  letter-spacing: 0.03em;
+}
+
+.btn-void:hover { background: rgba(204,34,34,0.15); border-color: var(--redstone); }
+
+/* SUCCESS OVERLAY */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s steps(3);
+}
+
+.overlay.show { opacity: 1; pointer-events: all; }
+
+.success-card {
+  background: var(--panel);
+  border: 4px solid var(--emerald);
+  outline: 3px solid #000;
+  padding: 36px 40px;
+  text-align: center;
+  box-shadow: 8px 8px 0 #000, 0 0 40px var(--emerald-glow);
+  max-width: 360px;
+  width: 92%;
+  transform: scale(0.8);
+  transition: transform 0.2s steps(4);
+}
+
+.overlay.show .success-card { transform: scale(1); }
+
+.success-icon {
+  font-size: 60px;
+  margin-bottom: 12px;
+  display: block;
+  animation: popIn 0.4s steps(4);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.success-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 13px;
+  color: var(--gold);
+  text-shadow: 2px 2px 0 #000;
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.success-amount {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 22px;
+  color: var(--emerald);
+  text-shadow: 2px 2px 0 #000;
+  margin-bottom: 6px;
+}
+
+.success-method {
+  font-size: 20px;
+  color: var(--text-dim);
+  margin-bottom: 18px;
+}
+
+.success-change {
+  background: rgba(23,221,98,0.1);
+  border: 2px solid var(--emerald-dark);
+  color: var(--emerald);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  padding: 10px;
+  margin-bottom: 18px;
+  text-shadow: 1px 1px 0 #000;
+  line-height: 1.8;
+}
+
+.btn-new-sale {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(180deg, #1fee6a, var(--emerald-dark));
+  border: 3px solid #000;
+  color: #003a15;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #056030;
+  transition: all 0.1s steps(1);
+}
+
+.btn-new-sale:hover { background: linear-gradient(180deg, #34ff7c, #0fbe52); }
+.btn-new-sale:active { transform: translateY(4px); box-shadow: none; }
+
+.transaction-id {
+  font-size: 14px;
+  color: #555;
+  margin-top: 10px;
+}
+
+/* Scrollbar on login */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #111; }
+::-webkit-scrollbar-thumb { background: var(--stone-dark); border: 2px solid #000; }
+
+/* regular toast (bottom center) */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(40px);
+  background: var(--emerald-dark);
+  border: 2px solid #000;
+  color: white;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  padding: 8px 16px;
+  box-shadow: 4px 4px 0 #000;
+  opacity: 0;
+  transition: all 0.2s steps(3);
+  z-index: 200;
+  pointer-events: none;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Minecraft-style VIP toast (top right) */
+.vip-toast {
+  position: fixed;
+  top: 72px;
+  right: -360px;
+  z-index: 300;
+  pointer-events: none;
+  display: flex;
+  align-items: stretch;
+  filter: drop-shadow(4px 4px 0 #000);
+  transition: right 0.18s steps(6);
+}
+.vip-toast.show { right: 16px; }
+
+.vip-toast-icon {
+  width: 52px;
+  background: #1a1a1a;
+  border: 3px solid #000;
+  border-right: 2px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.vip-toast-body {
+  background: #1a1a1a;
+  border: 3px solid #000;
+  border-left: none;
+  padding: 8px 14px 10px;
+  min-width: 220px;
+  position: relative;
+  overflow: hidden;
+}
+
+.vip-toast-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: var(--gold);
+  text-shadow: 1px 1px 0 #000;
+  margin-bottom: 5px;
+  letter-spacing: 0.04em;
+}
+
+.vip-toast-msg {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: var(--emerald);
+  text-shadow: 1px 1px 0 #000;
+  line-height: 1.7;
+}
+
+.vip-toast-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--gold);
+  transform-origin: left;
+}
+
+.vip-toast.show .vip-toast-bar {
+  animation: vipBarDrain 3.5s linear forwards;
+  animation-delay: 0.3s;
+}
+
+@keyframes vipBarDrain {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== LOGIN PAGE ===================== -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-icon">🏪</div>
+    <div class="login-title">SHADOWSHOP<br>TRADING CO.</div>
+    <div class="login-subtitle">[ Staff Login Required ]</div>
+
+    <label class="mc-label">▶ Cashier ID:</label>
+    <input class="mc-input" type="password" id="loginInput" placeholder="Enter your ID..." maxlength="20"
+      onkeydown="if(event.key==='Enter') doLogin()">
+
+    <button class="mc-btn" onclick="doLogin()">[ LOG IN ]</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ===================== POS PAGE ===================== -->
+<div id="posPage">
+
+  <div class="topbar">
+    <div class="topbar-brand">⛏ SHADOWSHOP POS</div>
+    <div class="topbar-info">
+      <span id="clock">--:--</span>
+      <span>Register <strong>#01</strong></span>
+      <div class="cashier-badge" id="cashierBadge">🧑 SHADOW</div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- PRODUCTS -->
+    <div class="products-panel">
+      <div class="search-bar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="searchInput" placeholder="Search items or SKU..." oninput="filterProducts()">
+      </div>
+      <div class="category-tabs" id="categoryTabs"></div>
+      <div class="product-grid" id="productGrid"></div>
+    </div>
+
+    <!-- CART -->
+    <div class="cart-panel">
+      <div class="cart-header">
+        <div class="cart-title">⚔ CART</div>
+        <div class="cart-count" id="cartCount">0</div>
+      </div>
+
+      <div class="customer-row">
+        <input class="mc-input" id="playerNameInput" style="margin-bottom:0;font-size:17px;padding:8px 12px;" type="text" placeholder="Player name (REQUIRED) *" oninput="onPlayerNameChange()">
+        <div style="font-size:13px;color:var(--redstone);margin-top:4px;min-height:16px;" id="playerNameError"></div>
+      </div>
+
+      <div class="cart-items" id="cartItems">
+        <div class="cart-empty" id="cartEmpty">
+          <div class="cart-empty-icon">📦</div>
+          <p>INVENTORY<br>EMPTY</p>
+        </div>
+      </div>
+
+      <div class="discount-row">
+        <input class="discount-input" type="text" id="discountInput" placeholder="Discount code...">
+        <button class="btn-discount" onclick="applyDiscount()">APPLY</button>
+      </div>
+
+      <div class="cart-totals">
+        <div class="totals-row"><span>Subtotal</span><span id="subtotalDisplay">◈ 0</span></div>
+        <div class="totals-row discount" id="discountRow" style="display:none"><span id="discountLabel">Discount</span><span id="discountDisplay">-◈ 0</span></div>
+        <div class="totals-row"><span>Fees</span><span id="feesDisplay">◈ 1</span></div>
+        <hr class="totals-divider">
+        <div class="totals-row total"><span>TOTAL</span><span id="totalDisplay">◈ 0</span></div>
+      </div>
+
+      <div class="pay-section">
+        <div class="emerald-row">
+          <span class="emerald-label">◈ Given:</span>
+          <input class="emerald-input" type="number" id="cashGiven" placeholder="0" oninput="calcChange()">
+          <span class="change-display" id="changeLabel">Change: ◈ 0</span>
+        </div>
+
+        <button class="btn-charge" id="chargeBtn" onclick="processPayment()" disabled>
+          CHARGE ◈ 0
+        </button>
+        <button class="btn-void" onclick="voidTransaction()">▶ VOID TRANSACTION</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="success-card">
+    <span class="success-icon">✅</span>
+    <div class="success-title">TRADE<br>COMPLETE!</div>
+    <div class="success-amount" id="successAmount">◈ 0</div>
+    <div class="success-method" id="successPlayer">Player: —</div>
+    <div class="success-method">Paid with Emeralds</div>
+    <div class="success-change" id="successChange" style="display:none">CHANGE DUE: ◈ 0</div>
+    <button class="btn-new-sale" onclick="newSale()">[ NEW SALE ]</button>
+    <div class="transaction-id" id="txnId"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="vip-toast" id="vipToast">
+  <div class="vip-toast-icon">👑</div>
+  <div class="vip-toast-body">
+    <div class="vip-toast-title">★ VIP CUSTOMER ★</div>
+    <div class="vip-toast-msg">DISCOUNT APPLIED!<br>50% OFF YOUR ORDER</div>
+    <div class="vip-toast-bar"></div>
+  </div>
+</div>
+
+<script>
+// ===== PRODUCTS =====
+const PRODUCTS = [
+  { id:1,  name:'Enchanted Armor', sku:'SJH@12',  price:7,   emoji:'🛡️', category:'Armor' },
+  { id:2,  name:'Single Enchanted', sku:'SJH@15', price:2,   emoji:'✨', category:'Armor' },
+  { id:3,  name:'Armor',           sku:'WHS@83',  price:5,   emoji:'⚔️', category:'Armor' },
+  { id:9,  name:'Single Armor',    sku:'WHS@475', price:2,   emoji:'🪖', category:'Armor' },
+  { id:4,  name:'Blocks',          sku:'DH@34',   price:1,   emoji:'🟫', category:'Blocks' },
+  { id:5,  name:'Blocks2',         sku:'DH@67',   price:2,   emoji:'🟩', category:'Blocks' },
+  { id:6,  name:'Redstone',        sku:'RH@10',   price:3,   emoji:'🔴', category:'Resources' },
+  { id:7,  name:'House',           sku:'WHS@283', price:43,  emoji:'🏠', category:'Structures' },
+  { id:8,  name:'Car',             sku:'DJW@73',  price:50,  emoji:'🚗', category:'Structures' },
+  { id:10, name:'VIP Package',     sku:'VIP@124', price:100, emoji:'👑', category:'VIP' },
+];
+
+const CATEGORIES = ['All', 'Armor', 'Blocks', 'Resources', 'Structures', 'VIP'];
+
+// VIP usernames that unlock 50% discount
+const VIP_USERS = ['cgcgplayzyt', 'd4rkh00d'];
+
+// Discount codes
+const DISCOUNT_CODES = {
+  'FREE':              { type:'flat', value: 2 },
+  'SECRETPASSWORD123': { type:'flat', value: 5 },
+  '163926':            { type:'pct',  value: 100 },
+};
+
+const CASHIERS = {
+  '163926': 'Shadow'
+};
+
+let cart = [];
+let activeCategory = 'All';
+let appliedDiscount = null; // { type, value, code }
+let loggedIn = false;
+
+// ===== LOGIN =====
+function doLogin() {
+  const val = document.getElementById('loginInput').value.trim();
+  const errEl = document.getElementById('loginError');
+  if (CASHIERS[val]) {
+    loggedIn = true;
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('posPage').classList.add('active');
+    document.getElementById('cashierBadge').textContent = `🧑 ${CASHIERS[val].toUpperCase()}`;
+    startClock();
+    renderTabs();
+    renderProducts();
+    renderCart();
+  } else {
+    errEl.textContent = '✗ INVALID ID. ACCESS DENIED.';
+    errEl.style.animation = 'none';
+    errEl.offsetHeight;
+    errEl.style.animation = 'shake 0.3s steps(3)';
+    document.getElementById('loginInput').value = '';
+  }
+}
+
+// ===== CLOCK =====
+function startClock() {
+  function tick() {
+    const now = new Date();
+    document.getElementById('clock').textContent =
+      now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+// ===== TABS =====
+function renderTabs() {
+  document.getElementById('categoryTabs').innerHTML = CATEGORIES.map(c =>
+    `<button class="tab${c===activeCategory?' active':''}" onclick="setCategory('${c}')">${c}</button>`
+  ).join('');
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  renderTabs();
+  renderProducts();
+}
+
+// ===== PRODUCTS =====
+function renderProducts() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const prods = PRODUCTS.filter(p => {
+    const matchCat = activeCategory === 'All' || p.category === activeCategory;
+    const matchSearch = !search || p.name.toLowerCase().includes(search) || p.sku.toLowerCase().includes(search);
+    return matchCat && matchSearch;
+  });
+
+  document.getElementById('productGrid').innerHTML = prods.map(p => `
+    <div class="product-card" onclick="addToCart(${p.id})">
+      <div class="product-emoji">${p.emoji}</div>
+      <div class="product-name">${p.name}</div>
+      <div class="product-sku">${p.sku}</div>
+      <div class="product-price">◈ ${p.price}</div>
+    </div>
+  `).join('');
+}
+
+function filterProducts() { renderProducts(); }
+
+// ===== CART =====
+function addToCart(id) {
+  const prod = PRODUCTS.find(p => p.id === id);
+  if (!prod) return;
+  const existing = cart.find(i => i.id === id);
+  if (existing) existing.qty++;
+  else cart.push({ ...prod, qty: 1 });
+  renderCart();
+  showToast(`Added ${prod.name}!`);
+}
+
+function changeQty(id, delta) {
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+  renderCart();
+}
+
+function removeItem(id) {
+  cart = cart.filter(i => i.id !== id);
+  renderCart();
+}
+
+function renderCart() {
+  const el = document.getElementById('cartItems');
+  const empty = document.getElementById('cartEmpty');
+
+  if (cart.length === 0) {
+    el.innerHTML = '';
+    el.appendChild(empty);
+    empty.style.display = 'flex';
+  } else {
+    empty.style.display = 'none';
+    el.innerHTML = cart.map(item => `
+      <div class="cart-item">
+        <div class="cart-item-emoji">${item.emoji}</div>
+        <div class="cart-item-info">
+          <div class="cart-item-name">${item.name}</div>
+          <div class="cart-item-price">◈ ${item.price} each</div>
+        </div>
+        <div class="cart-item-controls">
+          <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+          <span class="qty-display">${item.qty}</span>
+          <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+        </div>
+        <div class="cart-item-total">◈ ${item.price * item.qty}</div>
+        <button class="remove-btn" onclick="removeItem(${item.id})">✕</button>
+      </div>
+    `).join('');
+    el.appendChild(empty);
+  }
+
+  document.getElementById('cartCount').textContent = cart.reduce((s,i) => s+i.qty, 0);
+  updateTotals();
+}
+
+// ===== TOTALS =====
+function getSubtotal() {
+  return cart.reduce((s,i) => s + i.price * i.qty, 0);
+}
+
+function getDiscountAmt(subtotal) {
+  if (!appliedDiscount) return 0;
+  if (appliedDiscount.type === 'pct') {
+    return Math.round(subtotal * appliedDiscount.value / 100);
+  } else {
+    return Math.min(appliedDiscount.value, subtotal);
+  }
+}
+
+function isOwnerCode() {
+  return appliedDiscount && appliedDiscount.code === '163926';
+}
+
+function updateTotals() {
+  const subtotal = getSubtotal();
+  const discAmt = getDiscountAmt(subtotal);
+  const afterDisc = subtotal - discAmt;
+  // 163926 waives the ◈1 service fee entirely
+  const fees = (cart.length > 0 && !isOwnerCode()) ? 1 : 0;
+  const total = afterDisc + fees;
+
+  document.getElementById('subtotalDisplay').textContent = '◈ ' + subtotal;
+  const feesEl = document.getElementById('feesDisplay');
+  if (isOwnerCode()) {
+    feesEl.textContent = '◈ 0';
+    feesEl.style.textDecoration = 'line-through';
+    feesEl.style.color = 'var(--emerald)';
+  } else {
+    feesEl.textContent = '◈ ' + fees;
+    feesEl.style.textDecoration = '';
+    feesEl.style.color = '';
+  }
+  document.getElementById('totalDisplay').textContent = '◈ ' + total;
+
+  if (appliedDiscount && (discAmt > 0 || isOwnerCode())) {
+    document.getElementById('discountRow').style.display = 'flex';
+    const label = appliedDiscount.type === 'pct'
+      ? 'Discount (' + appliedDiscount.value + '%)'
+      : 'Discount (' + appliedDiscount.code + ')';
+    document.getElementById('discountLabel').textContent = label;
+    document.getElementById('discountDisplay').textContent = '-◈ ' + discAmt;
+  } else {
+    document.getElementById('discountRow').style.display = 'none';
+  }
+
+  const btn = document.getElementById('chargeBtn');
+  if (isOwnerCode() && total === 0) {
+    btn.textContent = 'CHARGE FREE ✓';
+  } else {
+    btn.textContent = 'CHARGE ◈ ' + total;
+  }
+  btn.disabled = cart.length === 0;
+
+  calcChange();
+}
+
+function applyDiscount() {
+  const code = document.getElementById('discountInput').value.trim().toUpperCase();
+  const discEl = document.getElementById('discountInput');
+  const playerName = document.getElementById('playerNameInput').value.trim().toLowerCase();
+  const disc = DISCOUNT_CODES[code];
+
+  // VIP codes — only work for VIP usernames
+  if (code === 'VIP2736192' || code === 'VIP37439274') {
+    if (VIP_USERS.includes(playerName)) {
+      appliedDiscount = { type:'pct', value: 50, code };
+      discEl.style.borderColor = 'var(--emerald)';
+      showToast('VIP code applied: 50% off!');
+      setTimeout(() => discEl.style.borderColor = '', 2000);
+      updateTotals();
+    } else {
+      appliedDiscount = null;
+      discEl.style.borderColor = 'var(--redstone)';
+      showToast('VIP CODE: PLAYER NOT VIP!');
+      setTimeout(() => discEl.style.borderColor = '', 2000);
+      updateTotals();
+    }
+    return;
+  }
+
+  if (disc) {
+    appliedDiscount = { ...disc, code };
+    discEl.style.borderColor = 'var(--emerald)';
+    showToast('Code applied: ' + code + '!');
+    setTimeout(() => discEl.style.borderColor = '', 2000);
+    updateTotals();
+  } else {
+    appliedDiscount = null;
+    discEl.style.borderColor = 'var(--redstone)';
+    showToast('Invalid code!');
+    setTimeout(() => discEl.style.borderColor = '', 2000);
+    updateTotals();
+  }
+}
+
+function getTotal() {
+  const subtotal = getSubtotal();
+  const discAmt = getDiscountAmt(subtotal);
+  const fees = (cart.length > 0 && !isOwnerCode()) ? 1 : 0;
+  return subtotal - discAmt + fees;
+}
+
+function calcChange() {
+  const given = parseInt(document.getElementById('cashGiven').value) || 0;
+  const total = getTotal();
+  const change = Math.max(0, given - total);
+  document.getElementById('changeLabel').textContent = `Change: ◈ ${change}`;
+}
+
+// ===== PAYMENT =====
+function processPayment() {
+  if (cart.length === 0) return;
+  const playerName = document.getElementById('playerNameInput').value.trim();
+  if (!playerName) {
+    document.getElementById('playerNameError').textContent = '✗ PLAYER NAME REQUIRED!';
+    document.getElementById('playerNameInput').style.borderColor = 'var(--redstone)';
+    showToast('Enter a player name first!');
+    return;
+  }
+  const total = getTotal();
+  const given = parseInt(document.getElementById('cashGiven').value) || 0;
+  const change = Math.max(0, given - total);
+
+  document.getElementById('successAmount').textContent = '◈ ' + total;
+  document.getElementById('successPlayer').textContent = 'Player: ' + playerName;
+
+  const changeEl = document.getElementById('successChange');
+  if (change > 0) {
+    changeEl.textContent = `CHANGE DUE: ◈ ${change}`;
+    changeEl.style.display = 'block';
+  } else {
+    changeEl.style.display = 'none';
+  }
+
+  const txnId = 'TXN-' + Date.now().toString().slice(-8);
+  document.getElementById('txnId').textContent = txnId;
+  document.getElementById('overlay').classList.add('show');
+}
+
+function newSale() {
+  cart = [];
+  appliedDiscount = null;
+  document.getElementById('discountInput').value = '';
+  document.getElementById('cashGiven').value = '';
+  document.getElementById('playerNameInput').value = '';
+  document.getElementById('playerNameError').textContent = '';
+  renderCart();
+  document.getElementById('overlay').classList.remove('show');
+}
+
+function voidTransaction() {
+  if (cart.length === 0) return;
+  if (confirm('Void this transaction?')) newSale();
+}
+
+// ===== PLAYER NAME =====
+function onPlayerNameChange() {
+  const el = document.getElementById('playerNameInput');
+  const errEl = document.getElementById('playerNameError');
+  const name = el.value.trim().toLowerCase();
+
+  if (name) {
+    el.style.borderColor = 'var(--emerald)';
+    errEl.textContent = '';
+  } else {
+    el.style.borderColor = '';
+    errEl.textContent = '';
+  }
+
+  // Auto-apply VIP discount for VIP usernames
+  if (VIP_USERS.includes(name)) {
+    appliedDiscount = { type: 'pct', value: 50, code: 'VIP' };
+    document.getElementById('discountInput').value = 'VIP (AUTO)';
+    document.getElementById('discountInput').style.borderColor = 'var(--gold)';
+    errEl.textContent = '★ VIP DISCOUNT AUTO-APPLIED!';
+    errEl.style.color = 'var(--gold)';
+    showVipToast();
+  } else {
+    // Remove VIP auto-discount if name is cleared or changed away from VIP
+    if (appliedDiscount && appliedDiscount.code === 'VIP') {
+      appliedDiscount = null;
+      document.getElementById('discountInput').value = '';
+      document.getElementById('discountInput').style.borderColor = '';
+      errEl.textContent = '';
+    }
+    errEl.style.color = 'var(--redstone)';
+  }
+
+  updateTotals();
+}
+
+// ===== VIP TOAST =====
+let vipToastTimer = null;
+function showVipToast() {
+  const el = document.getElementById('vipToast');
+  // Reset bar animation by cloning
+  const bar = el.querySelector('.vip-toast-bar');
+  const newBar = bar.cloneNode(true);
+  bar.parentNode.replaceChild(newBar, bar);
+
+  el.classList.remove('show');
+  void el.offsetWidth; // reflow
+  el.classList.add('show');
+
+  if (vipToastTimer) clearTimeout(vipToastTimer);
+  vipToastTimer = setTimeout(() => {
+    el.classList.remove('show');
+  }, 4000);
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+</script>
+</body>
+</html>
